@@ -1,7 +1,7 @@
-import { IsNotEmpty, IsInt } from 'class-validator';
+import { IsOptional, IsInt } from 'class-validator';
 
 export class GetUsersParamDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsInt()
   id: number;
 }
