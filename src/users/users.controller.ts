@@ -14,11 +14,15 @@ import {
 import { CreateUserDto } from './dtos/createUser.dto';
 import { GetUsersParamDto } from './dtos/getUsersParam.dto';
 import { PatchUserDto } from './dtos/patchUser.dto';
+import { UsersService } from './providers/users.service';
 
 @Controller('users')
 export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
   @Get()
   public getUsers(
+    @Param() getUserParamDto: GetUsersParamDto,
     @Query(
       'limit',
       new DefaultValuePipe(10),
@@ -32,7 +36,7 @@ export class UsersController {
     )
     page?: number,
   ) {
-    return `Getting all users with limit of ${limit} on page ${page}`;
+    return this.usersService.findAll(getUserParamDto, limit, page);
   }
 
   @Get(':id')
