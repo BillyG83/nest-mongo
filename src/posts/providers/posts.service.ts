@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { UsersService } from 'src/users/providers/users.service';
+import { CreatePostDto } from '../dtos/createPost.dto';
 
 @Injectable()
 export class PostsService {
   constructor(private readonly usersService: UsersService) {}
+
   public getAll(userId: string) {
     console.log(userId);
     const user = this.usersService.finByOneById(userId);
@@ -26,5 +28,9 @@ export class PostsService {
         user,
       },
     ];
+  }
+
+  public newPost(newPost: CreatePostDto) {
+    return { newPost };
   }
 }
