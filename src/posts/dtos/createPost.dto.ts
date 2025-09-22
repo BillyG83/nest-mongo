@@ -10,6 +10,7 @@ import {
   IsUrl,
   MinLength,
   Matches,
+  MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -68,6 +69,7 @@ export class CreatePostDto {
   })
   @IsUrl()
   @IsOptional()
+  @MaxLength(1024)
   featuredImageUrl?: string;
 
   @ApiPropertyOptional({
@@ -126,6 +128,7 @@ export class CreatePostDto {
     message:
       'slug should be only letters, numbers and hyphens with no spaces. EG: my-url',
   })
+  @MaxLength(256)
   slug: string;
 
   @ApiProperty({
@@ -158,6 +161,7 @@ export class CreatePostDto {
   })
   @IsString()
   @MinLength(4)
+  @MaxLength(128)
   @IsNotEmpty()
   title: string;
 }
