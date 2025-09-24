@@ -1,9 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
-import {
-  CreatePostMetaOptionsDto,
-  PostStatus,
-  PostType,
-} from './dtos/createPost.dto';
+import { PostStatus, PostType } from './dtos/createPost.dto';
+import { CreatePostMetaOptionsDto } from 'src/meta-options/dtos/createPostMetaOptions.dto';
 
 @Entity()
 export class Post {

@@ -13,6 +13,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { CreatePostMetaOptionsDto } from 'src/meta-options/dtos/createPostMetaOptions.dto';
 
 export enum PostStatus {
   DRAFT = 'draft',
@@ -26,31 +27,6 @@ export enum PostType {
   POST = 'post',
   SERIES = 'series',
   STORY = 'story',
-}
-
-export class CreatePostMetaOptionsDto {
-  @ApiProperty({
-    description: 'Metadata key name.',
-    example: 'readingTime',
-    minLength: 1,
-  })
-  @IsString()
-  @IsNotEmpty()
-  key: string;
-
-  @ApiProperty({
-    description: 'Any JSON-serializable value.',
-    oneOf: [
-      { type: 'string' },
-      { type: 'number' },
-      { type: 'boolean' },
-      { type: 'object' },
-      { type: 'array', items: { type: 'string' } },
-    ],
-    example: 4,
-  })
-  @IsNotEmpty()
-  value: any;
 }
 
 export class CreatePostDto {

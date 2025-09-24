@@ -48,7 +48,7 @@ export class Tag {
   schema: string;
 
   @Column({
-    length: 512,
+    length: 256,
     nullable: false,
     type: 'varchar',
     unique: true,
