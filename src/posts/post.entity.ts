@@ -1,14 +1,17 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { PostStatus, PostType } from './dtos/createPost.dto';
-import { CreatePostMetaOptionsDto } from 'src/meta-options/dtos/createPostMetaOptions.dto';
+import { MetaOption } from 'src/meta-options/meta-option.entity';
 
 @Entity()
 export class Post {
-  @PrimaryColumn({
-    type: 'number',
-    unique: true,
-  })
-  id: number;
+  @PrimaryGeneratedColumn({})
+  id: any;
 
   @Column({
     nullable: true,
@@ -23,11 +26,9 @@ export class Post {
   })
   featuredImageUrl: string;
 
-  @Column({
-    nullable: true,
-    type: 'array',
-  })
-  metaOptions: CreatePostMetaOptionsDto[];
+  @OneToOne(() => MetaOption)
+  @JoinColumn()
+  metaOptions?: MetaOption;
 
   @Column({
     default: PostType.POST,
@@ -65,11 +66,11 @@ export class Post {
   })
   status: PostStatus;
 
-  @Column({
-    nullable: true,
-    type: 'array',
-  })
-  tags: string[];
+  // @Column({
+  //   nullable: true,
+  //   type: 'array',
+  // })
+  // tags: string[];
 
   @Column({
     length: 128,

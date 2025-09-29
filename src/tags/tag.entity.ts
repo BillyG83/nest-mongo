@@ -28,10 +28,8 @@ export class Tag {
   })
   featuredImageUrl?: string;
 
-  @PrimaryGeneratedColumn({
-    type: 'number',
-  })
-  id: number;
+  @PrimaryGeneratedColumn()
+  id: any;
 
   @Column({
     length: 256,
