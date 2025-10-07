@@ -22,7 +22,7 @@ export class PostsController {
   })
   @Post()
   public createPost(@Body() createPostDto: CreatePostDto) {
-    return this.postService.newPost(createPostDto);
+    return this.postService.create(createPostDto);
   }
 
   @ApiOperation({

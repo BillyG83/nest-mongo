@@ -48,19 +48,9 @@ export class CreatePostDto {
   @MaxLength(1024)
   featuredImageUrl?: string;
 
-  @ApiPropertyOptional({
-    description:
-      'Arbitrary metadata for the post as key/value pairs (JSON-serializable).',
-    type: () => [CreatePostMetaOptionsDto],
-    example: [
-      { key: 'readingTime', value: 4 },
-      { key: 'featured', value: true },
-    ],
-  })
-  @IsArray()
   @Type(() => CreatePostMetaOptionsDto)
   @IsOptional()
-  metaOptions?: [CreatePostMetaOptionsDto];
+  metaOptions?: CreatePostMetaOptionsDto | null;
 
   @ApiProperty({
     description: 'Type of content represented by the post.',

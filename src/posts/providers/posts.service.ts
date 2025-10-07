@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { UsersService } from 'src/users/providers/users.service';
-import { CreatePostDto } from '../dtos/createPost.dto';
+import { Body, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Post } from '../post.entity';
 import { Repository } from 'typeorm';
+import { UsersService } from 'src/users/providers/users.service';
+import { MetaOption } from 'src/meta-options/meta-option.entity';
+import { CreatePostDto } from '../dtos/createPost.dto';
+import { Post } from '../post.entity';
 
 @Injectable()
 export class PostsService {
@@ -11,7 +12,10 @@ export class PostsService {
     private readonly usersService: UsersService,
 
     @InjectRepository(Post)
-    private postsRepository: Repository<Post>,
+    private readonly postsRepository: Repository<Post>,
+
+    @InjectRepository(MetaOption)
+    private readonly metaOptionsRepository: Repository<MetaOption>,
   ) {}
 
   public getAll(userId: string) {
@@ -38,7 +42,21 @@ export class PostsService {
     ];
   }
 
-  public newPost(newPost: CreatePostDto) {
-    return { newPost };
+  public async create(@Body() createPostDto: CreatePostDto) {
+    const metaOptions = createPostDto.metaOptions
+      ? this.metaOptionsRepository.create(createPostDto.metaOptions)
+      : null;
+    if (metaOptions) {
+      await this.metaOptionsRepository.save(metaOptions);
+    }
+
+    const post = this.postsRepository.create(createPostDto);
+
+    if (metaOptions) {
+      post.metaOptions = metaOptions;
+    }
+
+    const result = await this.postsRepository.save(post);
+    return result;
   }
 }
