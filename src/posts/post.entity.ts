@@ -26,7 +26,11 @@ export class Post {
   })
   featuredImageUrl: string;
 
-  @OneToOne(() => MetaOption)
+  // one to one bidirectional relationship, if post is delete, meta options is too
+  @OneToOne(() => MetaOption, (metaOptions) => metaOptions.post, {
+    eager: true, // always return meta-options with posts
+    cascade: true, // always creates new meta-options when post is created
+  })
   @JoinColumn()
   metaOptions?: MetaOption | null;
 

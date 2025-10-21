@@ -18,45 +18,50 @@ export class PostsService {
     private readonly metaOptionsRepository: Repository<MetaOption>,
   ) {}
 
-  public getAll(userId: string) {
-    console.log(userId);
+  public async getAll(userId?: string) {
+    // if not set to 'eager' in the post.entity define the relationship
+    const posts = await this.postsRepository.find({
+      relations: {
+        metaOptions: true,
+      },
+    });
+    if (!userId) return posts;
     const user = this.usersService.finByOneById(userId);
+    if (!user) {
+      console.error('use of posts not found');
+    }
 
-    if (!user) return [];
-    return [
-      {
-        content: 'Post 1 content',
-        title: 'Post title 1',
-        user,
-      },
-      {
-        content: 'Post 2 content',
-        title: 'Post title 2',
-        user,
-      },
-      {
-        content: 'Post 3 content',
-        title: 'Post title 3',
-        user,
-      },
-    ];
+    // TODO save userId with post entity?
+    const postsOfUser = posts.filter((post) => post.id === user.id);
+    return postsOfUser;
   }
 
   public async create(@Body() createPostDto: CreatePostDto) {
-    const metaOptions = createPostDto.metaOptions
-      ? this.metaOptionsRepository.create(createPostDto.metaOptions)
-      : null;
-    if (metaOptions) {
-      await this.metaOptionsRepository.save(metaOptions);
-    }
-
     const post = this.postsRepository.create(createPostDto);
-
-    if (metaOptions) {
-      post.metaOptions = metaOptions;
-    }
-
     const result = await this.postsRepository.save(post);
     return result;
+  }
+
+  public async delete(id: number) {
+    const post = await this.postsRepository.findOneBy({ id });
+    if (!post?.metaOptions) {
+      return 'this post has no meta options';
+    }
+    const postFoundByMetaOptions = await this.metaOptionsRepository.find({
+      where: { id: post?.metaOptions.id },
+      relations: { post: true },
+    });
+    console.log(postFoundByMetaOptions);
+
+    if (postFoundByMetaOptions) {
+      return postFoundByMetaOptions;
+    }
+    await this.postsRepository.delete(id);
+    if (!post) return 'post not found';
+    return {
+      deleted: true,
+      postId: id,
+      postTitle: post?.title,
+    };
   }
 }

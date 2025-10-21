@@ -62,7 +62,6 @@ export class UsersService {
    */
   public finByOneById(id: string) {
     console.log({ finByOneById: id });
-
     return {
       id: 1,
       firstName: 'Bill',
