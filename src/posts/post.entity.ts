@@ -2,16 +2,22 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { PostStatus, PostType } from './dtos/createPost.dto';
 import { MetaOption } from 'src/meta-options/meta-option.entity';
+import { User } from 'src/users/user.entity';
 
 @Entity()
 export class Post {
   @PrimaryGeneratedColumn({})
   id: any;
+
+  // bidirectional many to one relationship with user
+  @ManyToOne(() => User, (user) => user.posts)
+  author: User;
 
   @Column({
     nullable: true,

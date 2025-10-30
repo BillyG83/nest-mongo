@@ -8,8 +8,8 @@ export class AuthService {
     private readonly userService: UsersService,
   ) {}
 
-  public login(email: string, password: string, id: string) {
-    const user = this.userService.finByOneById(id);
+  public async login(email: string, password: string, id: number) {
+    const user = await this.userService.finByOneById(id);
     if (!user) return 'user no in database';
     if (user.email !== email) return 'users email mismatch';
     if (user.password !== password) return 'user password mismatch';

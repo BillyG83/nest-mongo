@@ -7,6 +7,6 @@ export class AuthController {
 
   @Get()
   public getAuthPerUser() {
-    return this.authService.login('email', 'password', 'id');
+    return this.authService.login('email', 'password', 1);
   }
 }

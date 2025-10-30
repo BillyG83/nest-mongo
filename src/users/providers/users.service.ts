@@ -60,14 +60,11 @@ export class UsersService {
   /**
    * The method to get a specific user by the user Id
    */
-  public finByOneById(id: string) {
-    console.log({ finByOneById: id });
-    return {
-      id: 1,
-      firstName: 'Bill',
-      email: 'bill@gmail.com',
-      password: 'password1',
-    };
+  public async finByOneById(id: number) {
+    const user = await this.userRepository.findOneBy({
+      id,
+    });
+    return user;
   }
 
   /**

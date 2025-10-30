@@ -19,26 +19,30 @@ export class PostsService {
     private readonly metaOptionsRepository: Repository<MetaOption>,
   ) {}
 
-  public async getAll(userId?: string) {
+  public async getAll(userId?: number) {
     // if not set to 'eager' in the post.entity define the relationship
     const posts = await this.postsRepository.find({
       relations: {
         metaOptions: true,
+        author: true,
       },
     });
-    if (!userId) return posts;
-    const user = this.usersService.finByOneById(userId);
-    if (!user) {
-      console.error('use of posts not found');
-    }
+    console.log('to do filter posts by ' + userId);
 
-    // TODO save userId with post entity?
-    const postsOfUser = posts.filter((post) => post.id === user.id);
-    return postsOfUser;
+    return posts;
   }
 
   public async create(@Body() createPostDto: CreatePostDto) {
-    const post = this.postsRepository.create(createPostDto);
+    const author = await this.usersService.finByOneById(createPostDto.authorId);
+    console.log({ author });
+
+    if (!author) {
+      return 'author not found';
+    }
+    const post = this.postsRepository.create({
+      ...createPostDto,
+      author: author,
+    });
     const result = await this.postsRepository.save(post);
     return result;
   }

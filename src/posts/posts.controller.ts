@@ -24,7 +24,7 @@ export class PostsController {
   }
 
   @Get(':userId')
-  public getUserPosts(@Param('userId') userId: string) {
+  public getUserPosts(@Param('userId') userId: number) {
     return this.postService.getAll(userId);
   }
 

@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Post } from 'src/posts/post.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class User {
@@ -33,4 +34,8 @@ export class User {
     type: 'varchar',
   })
   password: string;
+
+  // bidirectional one to many relationship with posts
+  @OneToMany(() => Post, (post) => post.author)
+  posts: Post[];
 }
