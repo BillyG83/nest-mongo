@@ -5,6 +5,7 @@ import { UsersService } from 'src/users/providers/users.service';
 import { MetaOption } from 'src/meta-options/meta-option.entity';
 import { CreatePostDto } from '../dtos/createPost.dto';
 import { Post } from '../post.entity';
+import { isNotEmpty } from 'class-validator';
 
 @Injectable()
 export class PostsService {
@@ -44,20 +45,23 @@ export class PostsService {
 
   public async delete(id: number) {
     const post = await this.postsRepository.findOneBy({ id });
+    if (!post) return 'post not found';
+
     if (!post?.metaOptions) {
       return 'this post has no meta options';
     }
-    const postFoundByMetaOptions = await this.metaOptionsRepository.find({
-      where: { id: post?.metaOptions.id },
+
+    const metaOptionsOfPost = await this.metaOptionsRepository.findOne({
+      where: { id: post.metaOptions.id },
       relations: { post: true },
     });
-    console.log(postFoundByMetaOptions);
 
-    if (postFoundByMetaOptions) {
-      return postFoundByMetaOptions;
-    }
     await this.postsRepository.delete(id);
-    if (!post) return 'post not found';
+
+    if (isNotEmpty(metaOptionsOfPost) && metaOptionsOfPost?.id) {
+      await this.metaOptionsRepository.delete(metaOptionsOfPost.id);
+    }
+
     return {
       deleted: true,
       postId: id,

@@ -23,7 +23,9 @@ export class MetaOption {
   metaValue: string;
 
   // one to one bidirectional relationship, if post is delete, meta options is too
-  @OneToOne(() => Post, (post) => post.metaOptions)
+  @OneToOne(() => Post, (post) => post.metaOptions, {
+    onDelete: 'CASCADE',
+  })
   post: Post;
 
   @UpdateDateColumn()
