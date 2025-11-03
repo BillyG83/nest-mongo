@@ -12,6 +12,9 @@ import { MetaOptionsModule } from './meta-options/meta-options.module';
   imports: [
     AuthModule,
     PostsModule,
+    UsersModule,
+    TagsModule,
+    MetaOptionsModule,
     TypeOrmModule.forRootAsync({
       imports: [],
       inject: [],
@@ -26,9 +29,6 @@ import { MetaOptionsModule } from './meta-options/meta-options.module';
         username: 'postgres',
       }),
     }),
-    UsersModule,
-    TagsModule,
-    MetaOptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

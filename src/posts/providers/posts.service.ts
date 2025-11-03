@@ -6,11 +6,13 @@ import { MetaOption } from 'src/meta-options/meta-option.entity';
 import { CreatePostDto } from '../dtos/createPost.dto';
 import { Post } from '../post.entity';
 import { isNotEmpty } from 'class-validator';
+import { TagsService } from 'src/tags/providers/tags.service';
 
 @Injectable()
 export class PostsService {
   constructor(
     private readonly usersService: UsersService,
+    private readonly tagsService: TagsService,
 
     @InjectRepository(Post)
     private readonly postsRepository: Repository<Post>,
@@ -34,14 +36,16 @@ export class PostsService {
 
   public async create(@Body() createPostDto: CreatePostDto) {
     const author = await this.usersService.finByOneById(createPostDto.authorId);
-    console.log({ author });
-
     if (!author) {
       return 'author not found';
     }
+    const tags = await this.tagsService.findMultipleTags(
+      createPostDto.tags || [],
+    );
     const post = this.postsRepository.create({
       ...createPostDto,
       author: author,
+      tags: tags,
     });
     const result = await this.postsRepository.save(post);
     return result;

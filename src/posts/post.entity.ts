@@ -2,6 +2,8 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -9,6 +11,7 @@ import {
 import { PostStatus, PostType } from './dtos/createPost.dto';
 import { MetaOption } from 'src/meta-options/meta-option.entity';
 import { User } from 'src/users/user.entity';
+import { Tag } from 'src/tags/tag.entity';
 
 @Entity()
 export class Post {
@@ -76,11 +79,9 @@ export class Post {
   })
   status: PostStatus;
 
-  // @Column({
-  //   nullable: true,
-  //   type: 'array',
-  // })
-  // tags: string[];
+  @ManyToMany(() => Tag)
+  @JoinTable()
+  tags: Tag[];
 
   @Column({
     length: 128,

@@ -118,16 +118,14 @@ export class CreatePostDto {
   status: PostStatus;
 
   @ApiPropertyOptional({
-    description:
-      'Free-form tags associated with the post. Each tag must be at least 3 characters.',
-    type: [String],
-    example: ['nestjs', 'swagger', 'blog'],
+    description: 'Array of Ids of tags',
+    type: [Number],
+    example: [1, 2, 3],
   })
   @IsArray()
-  @IsString({ each: true })
-  @MinLength(3, { each: true })
+  @IsInt({ each: true })
   @IsOptional()
-  tags?: string[];
+  tags?: number[];
 
   @ApiProperty({
     example: 'Blog Post Title',
