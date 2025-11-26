@@ -8,5 +8,6 @@ import { MetaOptionsService } from './providers/meta-options.service';
   controllers: [MetaOptionsController],
   imports: [TypeOrmModule.forFeature([MetaOption])],
   providers: [MetaOptionsService],
+  exports: [MetaOptionsService],
 })
 export class MetaOptionsModule {}

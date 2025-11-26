@@ -79,8 +79,8 @@ export class Post {
   })
   status: PostStatus;
 
-  @ManyToMany(() => Tag)
-  @JoinTable()
+  @ManyToMany(() => Tag, (tag) => tag.posts)
+  @JoinTable() // makes a new table where ID of post is related to ID of tags
   tags: Tag[];
 
   @Column({

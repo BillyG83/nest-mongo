@@ -12,10 +12,18 @@ export class MetaOptionsService {
     private readonly metaOptionsRepository: Repository<MetaOption>,
   ) {}
 
+  public async findOne(id: number) {
+    return this.metaOptionsRepository.findOne({ where: { id } });
+  }
+
   public async create(createPostMetaOptionsDto: CreatePostMetaOptionsDto) {
     const metaOption = this.metaOptionsRepository.create(
       createPostMetaOptionsDto,
     );
     return await this.metaOptionsRepository.save(metaOption);
+  }
+
+  public async delete(id: number) {
+    await this.metaOptionsRepository.delete(id);
   }
 }

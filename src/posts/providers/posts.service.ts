@@ -2,36 +2,45 @@ import { Body, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/providers/users.service';
-import { MetaOption } from 'src/meta-options/meta-option.entity';
 import { CreatePostDto } from '../dtos/createPost.dto';
 import { Post } from '../post.entity';
-import { isNotEmpty } from 'class-validator';
 import { TagsService } from 'src/tags/providers/tags.service';
+import { MetaOptionsService } from 'src/meta-options/providers/meta-options.service';
+import { PatchPostDto } from '../dtos/patchPost.dto';
 
 @Injectable()
 export class PostsService {
   constructor(
-    private readonly usersService: UsersService,
+    private readonly metaOptionsService: MetaOptionsService,
     private readonly tagsService: TagsService,
+    private readonly usersService: UsersService,
 
     @InjectRepository(Post)
     private readonly postsRepository: Repository<Post>,
-
-    @InjectRepository(MetaOption)
-    private readonly metaOptionsRepository: Repository<MetaOption>,
   ) {}
 
-  public async getAll(userId?: number) {
+  public async getAll() {
+    const posts = await this.postsRepository.find({
+      relations: {
+        metaOptions: true,
+        author: true,
+        tags: true,
+      },
+    });
+    return posts;
+  }
+
+  public async getAllByUserId(userId?: number) {
     // if not set to 'eager' in the post.entity define the relationship
     const posts = await this.postsRepository.find({
       relations: {
         metaOptions: true,
         author: true,
+        tags: true,
       },
     });
-    console.log('to do filter posts by ' + userId);
-
-    return posts;
+    const filteredPosts = posts.filter((post) => post.author.id === userId);
+    return filteredPosts;
   }
 
   public async create(@Body() createPostDto: CreatePostDto) {
@@ -45,10 +54,37 @@ export class PostsService {
     const post = this.postsRepository.create({
       ...createPostDto,
       author: author,
-      tags: tags,
+      tags: tags || [],
     });
     const result = await this.postsRepository.save(post);
     return result;
+  }
+
+  public async update(@Body() patchPostDto: PatchPostDto) {
+    const tags = await this.tagsService.findMultipleTags(patchPostDto.tags);
+    const post = await this.postsRepository.findOneBy({
+      id: patchPostDto.id,
+    });
+
+    if (!post) {
+      return `No post found with ID ${patchPostDto.id}`;
+    }
+
+    post.content = patchPostDto.content ?? post?.content;
+    post.featuredImageUrl =
+      patchPostDto.featuredImageUrl ?? post?.featuredImageUrl;
+    post.postType = patchPostDto.postType ?? post?.postType;
+    post.publishedOn = patchPostDto.publishedOn ?? post?.publishedOn;
+    post.schema = patchPostDto.schema ?? post?.schema;
+    post.slug = patchPostDto.slug ?? post?.slug;
+    post.status = patchPostDto.status ?? post?.status;
+    post.title = patchPostDto.title ?? post?.title;
+
+    if (tags) {
+      post.tags = tags;
+    }
+
+    return await this.postsRepository.save(post);
   }
 
   public async delete(id: number) {
@@ -59,15 +95,12 @@ export class PostsService {
       return 'this post has no meta options';
     }
 
-    const metaOptionsOfPost = await this.metaOptionsRepository.findOne({
-      where: { id: post.metaOptions.id },
-      relations: { post: true },
-    });
+    const metaOptionsOfPost = await this.metaOptionsService.findOne(
+      post.metaOptions.id,
+    );
 
-    await this.postsRepository.delete(id);
-
-    if (isNotEmpty(metaOptionsOfPost) && metaOptionsOfPost?.id) {
-      await this.metaOptionsRepository.delete(metaOptionsOfPost.id);
+    if (metaOptionsOfPost?.id) {
+      await this.metaOptionsService.delete(metaOptionsOfPost?.id);
     }
 
     return {

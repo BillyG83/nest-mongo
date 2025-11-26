@@ -1,8 +1,10 @@
+import { Post } from 'src/posts/post.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -30,6 +32,13 @@ export class Tag {
 
   @PrimaryGeneratedColumn()
   id: any;
+
+  // cascade ensures where tag is delete the ID to ID relationship
+  // is removed from the table post_tags_tag
+  @ManyToMany(() => Post, (post) => post.tags, {
+    onDelete: 'CASCADE',
+  })
+  posts: Post[];
 
   @Column({
     length: 256,
