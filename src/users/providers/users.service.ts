@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { AuthService } from 'src/auth/providers/auth.service';
 import { GetUsersParamDto } from '../dtos/getUsersParam.dto';
@@ -13,22 +14,15 @@ import { User } from '../user.entity';
 @Injectable()
 export class UsersService {
   constructor(
-    /**
-     * Circular dependency between the user and auth services
-     */
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
 
-    /**
-     * Injecting user repository
-     */
     @InjectRepository(User)
     private userRepository: Repository<User>,
+
+    private readonly configService: ConfigService,
   ) {}
 
-  /**
-   * The method to get all the users from the database
-   */
   public findAll(
     getUserParamDto?: GetUsersParamDto,
     limit?: number,
@@ -57,28 +51,20 @@ export class UsersService {
     ];
   }
 
-  /**
-   * The method to get a specific user by the user Id
-   */
   public async finByOneById(id: number) {
     const user = await this.userRepository.findOneBy({
       id,
     });
+
     return user;
   }
 
-  /**
-   * The method to create a new user in the users repository
-   */
   public async createUser(createUserDto: CreateUserDto) {
-    console.log('createUser');
-
     const existingUser = await this.userRepository.findOne({
       where: {
         email: createUserDto.email,
       },
     });
-    console.log({ existingUser });
 
     if (existingUser) {
       return console.log('user with his email exists');
