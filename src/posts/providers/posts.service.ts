@@ -1,4 +1,11 @@
-import { Body, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/users/providers/users.service';
@@ -20,71 +27,141 @@ export class PostsService {
   ) {}
 
   public async getAll() {
-    const posts = await this.postsRepository.find({
-      relations: {
-        metaOptions: true,
-        author: true,
-        tags: true,
-      },
-    });
-    return posts;
+    try {
+      const posts = await this.postsRepository.find({
+        relations: {
+          metaOptions: true,
+          author: true,
+          tags: true,
+        },
+      });
+      return posts;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new RequestTimeoutException('The request was unsuccessful', {
+        cause: error,
+      });
+    }
   }
 
   public async getAllByUserId(userId?: number) {
-    // if not set to 'eager' in the post.entity define the relationship
-    const posts = await this.postsRepository.find({
-      relations: {
-        metaOptions: true,
-        author: true,
-        tags: true,
-      },
-    });
-    const filteredPosts = posts.filter((post) => post.author.id === userId);
-    return filteredPosts;
+    try {
+      const filteredPosts = await this.postsRepository.find({
+        where: {
+          author: {
+            id: userId,
+          },
+        },
+        relations: {
+          metaOptions: true,
+          author: true,
+          tags: true,
+        },
+      });
+      if (filteredPosts.length === 0 || !filteredPosts) {
+        throw new BadRequestException(
+          `No posts found for user with Id: ${userId} were found`,
+        );
+      }
+      return filteredPosts;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new RequestTimeoutException('The request was unsuccessful', {
+        cause: error,
+      });
+    }
   }
 
   public async create(@Body() createPostDto: CreatePostDto) {
-    const author = await this.usersService.finByOneById(createPostDto.authorId);
-    if (!author) {
-      return 'author not found';
+    try {
+      const author = await this.usersService.finByOneById(
+        createPostDto.authorId,
+      );
+      if (!author) {
+        throw new BadRequestException(
+          `No author was found, user with Id: ${createPostDto.authorId}`,
+        );
+      }
+      const tags = await this.tagsService.findMultipleTags(
+        createPostDto.tags || [],
+      );
+      const post = this.postsRepository.create({
+        ...createPostDto,
+        author: author,
+        tags: tags || [],
+      });
+      const result = await this.postsRepository.save(post);
+      if (!result) {
+        throw new HttpException(
+          {
+            status: HttpStatus.INTERNAL_SERVER_ERROR,
+            response: 'Unable to save post',
+            filleName: 'posts.service.ts',
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          {
+            cause: new Error(),
+            description: 'this.postsRepository.save(post) failed',
+          },
+        );
+      }
+      return result;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new RequestTimeoutException('The request was unsuccessful', {
+        cause: error,
+      });
     }
-    const tags = await this.tagsService.findMultipleTags(
-      createPostDto.tags || [],
-    );
-    const post = this.postsRepository.create({
-      ...createPostDto,
-      author: author,
-      tags: tags || [],
-    });
-    const result = await this.postsRepository.save(post);
-    return result;
   }
 
   public async update(@Body() patchPostDto: PatchPostDto) {
     const tags = await this.tagsService.findMultipleTags(patchPostDto.tags);
-    const post = await this.postsRepository.findOneBy({
-      id: patchPostDto.id,
-    });
-
-    if (!post) {
-      return `No post found with ID ${patchPostDto.id}`;
+    if (tags?.length !== patchPostDto.tags) {
+      throw new BadRequestException(
+        'Tags have been requested that do not exist',
+      );
     }
 
-    post.content = patchPostDto.content ?? post?.content;
-    post.featuredImageUrl =
-      patchPostDto.featuredImageUrl ?? post?.featuredImageUrl;
-    post.postType = patchPostDto.postType ?? post?.postType;
-    post.publishedOn = patchPostDto.publishedOn ?? post?.publishedOn;
-    post.schema = patchPostDto.schema ?? post?.schema;
-    post.slug = patchPostDto.slug ?? post?.slug;
-    post.status = patchPostDto.status ?? post?.status;
-    post.title = patchPostDto.title ?? post?.title;
+    try {
+      const post = await this.postsRepository.findOneBy({
+        id: patchPostDto.id,
+      });
 
-    if (tags) {
-      post.tags = tags;
+      if (!post) {
+        throw new BadRequestException(
+          `No post found with ID ${patchPostDto.id}`,
+        );
+      }
+
+      post.content = patchPostDto.content ?? post?.content;
+      post.featuredImageUrl =
+        patchPostDto.featuredImageUrl ?? post?.featuredImageUrl;
+      post.postType = patchPostDto.postType ?? post?.postType;
+      post.publishedOn = patchPostDto.publishedOn ?? post?.publishedOn;
+      post.schema = patchPostDto.schema ?? post?.schema;
+      post.slug = patchPostDto.slug ?? post?.slug;
+      post.status = patchPostDto.status ?? post?.status;
+      post.title = patchPostDto.title ?? post?.title;
+
+      if (tags) {
+        post.tags = tags;
+      }
+
+      return await this.postsRepository.save(post);
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new RequestTimeoutException('The request was unsuccessful', {
+        cause: error,
+      });
     }
-
-    return await this.postsRepository.save(post);
   }
 
   public async delete(id: number) {

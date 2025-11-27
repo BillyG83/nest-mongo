@@ -1,4 +1,12 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
@@ -29,49 +37,89 @@ export class UsersService {
     page?: number,
   ) {
     console.log({ UsersService: 'findAll', getUserParamDto, limit, page });
-    const isAuth = this.authService.isAuth();
-    if (!isAuth) return 'no auth';
 
-    return [
-      {
-        firstName: 'Bill',
-        email: 'bill@gmail.com',
-        password: 'password1',
-      },
-      {
-        firstName: 'Bianca',
-        email: 'biance@gmail.com',
-        password: 'password1',
-      },
-      {
-        firstName: 'Kate',
-        email: 'kate@gmail.com',
-        password: 'password1',
-      },
-    ];
+    try {
+      const isAuth = this.authService.isAuth();
+      if (!isAuth) {
+        throw new BadRequestException(
+          `you are not authenticated to make this request`,
+          {},
+        );
+      }
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_IMPLEMENTED,
+          response: 'API not created yet',
+          filleName: 'users.service.ts',
+        },
+        HttpStatus.NOT_IMPLEMENTED,
+        {
+          cause: new Error(),
+          description: 'This options object is not returned to the user',
+        },
+      );
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new RequestTimeoutException('The request was unsuccessful', {
+        cause: error,
+      });
+    }
   }
 
-  public async finByOneById(id: number) {
-    const user = await this.userRepository.findOneBy({
-      id,
-    });
-
-    return user;
+  public async finByOneById(id?: number) {
+    try {
+      const user = await this.userRepository.findOneBy({
+        id,
+      });
+      if (!user) {
+        throw new BadRequestException(`no user of Id ${id} was found`, {});
+      }
+      return user;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new RequestTimeoutException('The request was unsuccessful', {
+        cause: error,
+      });
+    }
   }
 
   public async createUser(createUserDto: CreateUserDto) {
-    const existingUser = await this.userRepository.findOne({
-      where: {
-        email: createUserDto.email,
-      },
-    });
-
-    if (existingUser) {
-      return console.log('user with his email exists');
+    try {
+      const existingUser = await this.userRepository.findOne({
+        where: {
+          email: createUserDto.email,
+        },
+      });
+      if (existingUser) {
+        throw new BadRequestException(
+          `user with email ${existingUser?.email} already exists`,
+          {},
+        );
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new RequestTimeoutException('The request was unsuccessful', {
+        cause: error,
+      });
     }
 
     let newUser = this.userRepository.create(createUserDto);
-    newUser = await this.userRepository.save(newUser);
-    return newUser;
+    try {
+      newUser = await this.userRepository.save(newUser);
+      return newUser;
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Unable to create new user in the database',
+        {
+          cause: error,
+        },
+      );
+    }
   }
 }

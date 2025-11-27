@@ -1,6 +1,7 @@
-import { IsInt } from 'class-validator';
+import { IsInt, IsOptional } from 'class-validator';
 
 export class GetUsersParamDto {
   @IsInt()
-  id: number;
+  @IsOptional()
+  id?: number;
 }
