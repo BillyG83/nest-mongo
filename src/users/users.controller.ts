@@ -15,10 +15,15 @@ import { CreateUserDto } from './dtos/createUser.dto';
 import { GetUsersParamDto } from './dtos/getUsersParam.dto';
 import { PatchUserDto } from './dtos/patchUser.dto';
 import { UsersService } from './providers/users.service';
+import { MultiUsersService } from './providers/users-multi.service';
+import { CreateMultiUsersDto } from './dtos/createMultiUsers.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly multiUsersService: MultiUsersService,
+  ) {}
 
   @Get()
   public getUsers(
@@ -36,7 +41,7 @@ export class UsersController {
     )
     page?: number,
   ) {
-    return this.usersService.findAll(getUserParamDto, limit, page);
+    return this.multiUsersService.findAll(getUserParamDto, limit, page);
   }
 
   @Get(':id')
@@ -47,6 +52,11 @@ export class UsersController {
   @Post()
   public createUser(@Body() createUserDto: CreateUserDto) {
     return this.usersService.createUser(createUserDto);
+  }
+
+  @Post('many')
+  public createMultiUsers(@Body() createMultiUsersDto: CreateMultiUsersDto) {
+    return this.multiUsersService.createMany(createMultiUsersDto);
   }
 
   @Patch()
