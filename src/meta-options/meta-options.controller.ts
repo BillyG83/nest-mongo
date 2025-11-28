@@ -10,7 +10,6 @@ export class MetaOptionsController {
   public createMetaOption(
     @Body() createPostMetaOptionsDto: CreatePostMetaOptionsDto,
   ) {
-    console.log('POST META OPTION');
     return this.metaOptionsService.create(createPostMetaOptionsDto);
   }
 }

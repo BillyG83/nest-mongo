@@ -11,7 +11,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { AuthService } from 'src/auth/providers/auth.service';
-import { GetUsersParamDto } from '../dtos/getUsersParam.dto';
 import { User } from '../user.entity';
 import { CreateMultiUsersDto } from '../dtos/createMultiUsers.dto';
 import { PaginationProvider } from 'src/common/pagination/pagination.service';
@@ -29,13 +28,7 @@ export class MultiUsersService {
     private readonly dataSource: DataSource,
   ) {}
 
-  public findAll(
-    getUserParamDto?: GetUsersParamDto,
-    limit?: number,
-    page?: number,
-  ) {
-    console.log({ UsersService: 'findAll', getUserParamDto, limit, page });
-
+  public findAll(limit?: number, page?: number) {
     try {
       const isAuth = this.authService.isAuth();
       if (!isAuth) {

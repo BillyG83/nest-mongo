@@ -27,7 +27,6 @@ export class UsersController {
 
   @Get()
   public getUsers(
-    @Param() getUserParamDto: GetUsersParamDto,
     @Query(
       'limit',
       new DefaultValuePipe(10),
@@ -41,7 +40,7 @@ export class UsersController {
     )
     page?: number,
   ) {
-    return this.multiUsersService.findAll(getUserParamDto, limit, page);
+    return this.multiUsersService.findAll(limit, page);
   }
 
   @Get(':id')
