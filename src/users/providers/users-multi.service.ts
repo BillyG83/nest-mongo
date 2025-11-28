@@ -14,6 +14,7 @@ import { AuthService } from 'src/auth/providers/auth.service';
 import { GetUsersParamDto } from '../dtos/getUsersParam.dto';
 import { User } from '../user.entity';
 import { CreateMultiUsersDto } from '../dtos/createMultiUsers.dto';
+import { PaginationProvider } from 'src/common/pagination/pagination.service';
 
 @Injectable()
 export class MultiUsersService {
@@ -24,6 +25,7 @@ export class MultiUsersService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
+    private readonly PaginationProvider: PaginationProvider,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -42,18 +44,12 @@ export class MultiUsersService {
           {},
         );
       }
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_IMPLEMENTED,
-          response: 'API not created yet',
-          filleName: 'users.service.ts',
-        },
-        HttpStatus.NOT_IMPLEMENTED,
-        {
-          cause: new Error(),
-          description: 'This options object is not returned to the user',
-        },
+      const users = this.PaginationProvider.paginateQuery(
+        { page, limit },
+        this.userRepository,
       );
+
+      return users;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

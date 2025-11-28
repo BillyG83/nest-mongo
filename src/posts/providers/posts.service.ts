@@ -14,11 +14,16 @@ import { Post } from '../post.entity';
 import { TagsService } from 'src/tags/providers/tags.service';
 import { MetaOptionsService } from 'src/meta-options/providers/meta-options.service';
 import { PatchPostDto } from '../dtos/patchPost.dto';
+import { GetPostsDto } from '../dtos/getPosts.dto';
+import { paginationDefaults } from 'src/common/pagination/paginationDefaults';
+import { PaginationProvider } from 'src/common/pagination/pagination.service';
+import { Paginated } from 'src/common/pagination/paginated.interface';
 
 @Injectable()
 export class PostsService {
   constructor(
     private readonly metaOptionsService: MetaOptionsService,
+    private readonly paginationProvider: PaginationProvider,
     private readonly tagsService: TagsService,
     private readonly usersService: UsersService,
 
@@ -26,15 +31,18 @@ export class PostsService {
     private readonly postsRepository: Repository<Post>,
   ) {}
 
-  public async getAll() {
+  public async getAll(postQuery: GetPostsDto): Promise<Paginated<Post>> {
+    const page = postQuery.page || paginationDefaults.page;
+    const limit = postQuery.limit || paginationDefaults.limit;
+
     try {
-      const posts = await this.postsRepository.find({
-        relations: {
-          metaOptions: true,
-          author: true,
-          tags: true,
+      const posts = await this.paginationProvider.paginateQuery(
+        {
+          page,
+          limit,
         },
-      });
+        this.postsRepository,
+      );
       return posts;
     } catch (error) {
       if (error instanceof HttpException) {
@@ -46,9 +54,12 @@ export class PostsService {
     }
   }
 
-  public async getAllByUserId(userId?: number) {
+  public async getAllByUserId(postQuery: GetPostsDto, userId?: number) {
+    const page = postQuery.page || paginationDefaults.page;
+    const limit = postQuery.limit || paginationDefaults.limit;
+
     try {
-      const filteredPosts = await this.postsRepository.find({
+      const posts = await this.postsRepository.find({
         where: {
           author: {
             id: userId,
@@ -59,13 +70,15 @@ export class PostsService {
           author: true,
           tags: true,
         },
+        take: postQuery.limit,
+        skip: (page - 1) * limit,
       });
-      if (filteredPosts.length === 0 || !filteredPosts) {
+      if (posts.length === 0 || !posts) {
         throw new BadRequestException(
           `No posts found for user with Id: ${userId} were found`,
         );
       }
-      return filteredPosts;
+      return posts;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

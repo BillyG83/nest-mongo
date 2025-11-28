@@ -19,7 +19,10 @@ export class Post {
   id: any;
 
   // bidirectional many to one relationship with user
-  @ManyToOne(() => User, (user) => user.posts)
+  @ManyToOne(() => User, (user) => user.posts, {
+    cascade: true,
+    eager: true,
+  })
   author: User;
 
   @Column({
@@ -79,8 +82,11 @@ export class Post {
   })
   status: PostStatus;
 
-  @ManyToMany(() => Tag, (tag) => tag.posts)
-  @JoinTable() // makes a new table where ID of post is related to ID of tags
+  @ManyToMany(() => Tag, (tag) => tag.posts, {
+    cascade: true,
+    eager: true,
+  })
+  @JoinTable({}) // makes a new table where ID of post is related to ID of tags
   tags: Tag[];
 
   @Column({
