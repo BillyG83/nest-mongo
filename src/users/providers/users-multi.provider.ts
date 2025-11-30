@@ -16,7 +16,7 @@ import { CreateMultiUsersDto } from '../dtos/createMultiUsers.dto';
 import { PaginationProvider } from 'src/common/pagination/pagination.service';
 
 @Injectable()
-export class MultiUsersService {
+export class MultiUsersProvider {
   constructor(
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
@@ -28,7 +28,7 @@ export class MultiUsersService {
     private readonly dataSource: DataSource,
   ) {}
 
-  public findAll(limit?: number, page?: number) {
+  public async findAll(limit?: number, page?: number) {
     try {
       const isAuth = this.authService.isAuth();
       if (!isAuth) {
@@ -37,7 +37,7 @@ export class MultiUsersService {
           {},
         );
       }
-      const users = this.PaginationProvider.paginateQuery(
+      const users = await this.PaginationProvider.paginateQuery(
         { page, limit },
         this.userRepository,
       );

@@ -1,16 +1,18 @@
 import {
   BadRequestException,
-  forwardRef,
   HttpException,
-  Inject,
   Injectable,
   RequestTimeoutException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
-import { AuthService } from 'src/auth/providers/auth.service';
+import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dtos/createUser.dto';
 import { User } from '../user.entity';
+import { CreateUserProvider } from './create-user.provider';
+import { MultiUsersProvider } from './users-multi.provider';
+import { CreateMultiUsersDto } from '../dtos/createMultiUsers.dto';
+import { FindUserByEmailProvider } from './find-user-by-email.provider';
+import { Paginated } from 'src/common/pagination/paginated.interface';
 
 /**
  * Class to connect users table and perform business operations
@@ -19,18 +21,15 @@ import { User } from '../user.entity';
 @Injectable()
 export class UsersService {
   constructor(
-    @Inject(forwardRef(() => AuthService))
-    private readonly authService: AuthService,
-
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
-    // private readonly configService: ConfigService,
-
-    private readonly dataSource: DataSource,
+    private readonly createUserProvider: CreateUserProvider,
+    private readonly findUserByEmailProvider: FindUserByEmailProvider,
+    private readonly multiUserProvider: MultiUsersProvider,
   ) {}
 
-  public async finByOneById(id?: number) {
+  public async finByOneById(id?: number): Promise<User> {
     try {
       const user = await this.userRepository.findOneBy({
         id,
@@ -49,39 +48,24 @@ export class UsersService {
     }
   }
 
-  public async createUser(createUserDto: CreateUserDto) {
-    try {
-      const existingUser = await this.userRepository.findOne({
-        where: {
-          email: createUserDto.email,
-        },
-      });
-      if (existingUser) {
-        throw new BadRequestException(
-          `user with email ${existingUser?.email} already exists`,
-          {},
-        );
-      }
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new RequestTimeoutException('The request was unsuccessful', {
-        cause: error,
-      });
-    }
+  public async findOneByEmail(email: string): Promise<User | null> {
+    return this.findUserByEmailProvider.findUserByEmail(email);
+  }
 
-    let newUser = this.userRepository.create(createUserDto);
-    try {
-      newUser = await this.userRepository.save(newUser);
-      return newUser;
-    } catch (error) {
-      throw new RequestTimeoutException(
-        'Unable to create new user in the database',
-        {
-          cause: error,
-        },
-      );
-    }
+  public async findAll(
+    limit?: number,
+    page?: number,
+  ): Promise<Paginated<User>> {
+    return this.multiUserProvider.findAll(limit, page);
+  }
+
+  public async createManyUsers(
+    createMultiUsersDto: CreateMultiUsersDto,
+  ): Promise<User[]> {
+    return this.multiUserProvider.createMany(createMultiUsersDto);
+  }
+
+  public async createUser(createUserDto: CreateUserDto): Promise<User> {
+    return this.createUserProvider.createUser(createUserDto);
   }
 }
