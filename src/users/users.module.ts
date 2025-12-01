@@ -8,6 +8,9 @@ import { MultiUsersProvider } from './providers/users-multi.provider';
 import { PaginationModule } from 'src/common/pagination/pagination.module';
 import { CreateUserProvider } from './providers/create-user.provider';
 import { FindUserByEmailProvider } from './providers/find-user-by-email.provider';
+import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+import jwtConfig from 'src/config/jwt.config';
 
 @Module({
   controllers: [UsersController],
@@ -16,6 +19,8 @@ import { FindUserByEmailProvider } from './providers/find-user-by-email.provider
     forwardRef(() => AuthModule),
     TypeOrmModule.forFeature([User]),
     PaginationModule,
+    ConfigModule.forFeature(jwtConfig),
+    JwtModule.registerAsync(jwtConfig.asProvider()),
   ],
   providers: [
     UsersService,
