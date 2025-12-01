@@ -51,6 +51,7 @@ export class UsersController {
     return this.usersService.createUser(createUserDto);
   }
 
+  // here is example as guard is now global in app.module.ts
   @UseGuards(AccessTokenGuard)
   @Post('many')
   public createMultiUsers(@Body() createMultiUsersDto: CreateMultiUsersDto) {

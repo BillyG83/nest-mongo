@@ -10,6 +10,10 @@ import { TagsModule } from './tags/tags.module';
 import { MetaOptionsModule } from './meta-options/meta-options.module';
 import appConfig from './config/app.config';
 import databaseConfig from './config/database.config';
+import { APP_GUARD } from '@nestjs/core';
+import { AccessTokenGuard } from './auth/guards/access-token/access-token.guard';
+import { JwtModule } from '@nestjs/jwt';
+import jwtConfig from './config/jwt.config';
 
 const CURRENT_ENV = process.env.NODE_ENV;
 
@@ -21,6 +25,8 @@ const CURRENT_ENV = process.env.NODE_ENV;
       envFilePath: CURRENT_ENV ? `.env.${CURRENT_ENV}` : '.env',
       load: [appConfig, databaseConfig],
     }),
+    ConfigModule.forFeature(jwtConfig),
+    JwtModule.registerAsync(jwtConfig.asProvider()),
     MetaOptionsModule,
     PostsModule,
     TagsModule,
@@ -41,6 +47,12 @@ const CURRENT_ENV = process.env.NODE_ENV;
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AccessTokenGuard,
+    },
+  ],
 })
 export class AppModule {}
