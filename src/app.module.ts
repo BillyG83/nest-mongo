@@ -14,6 +14,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AccessTokenGuard } from './auth/guards/access-token/access-token.guard';
 import { JwtModule } from '@nestjs/jwt';
 import jwtConfig from './config/jwt.config';
+import environmentValidation from './config/enviroment.valiadtion';
 
 const CURRENT_ENV = process.env.NODE_ENV;
 
@@ -24,6 +25,7 @@ const CURRENT_ENV = process.env.NODE_ENV;
       isGlobal: true,
       envFilePath: CURRENT_ENV ? `.env.${CURRENT_ENV}` : '.env',
       load: [appConfig, databaseConfig],
+      validationSchema: environmentValidation,
     }),
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
