@@ -15,6 +15,7 @@ import { AccessTokenGuard } from './auth/guards/access-token/access-token.guard'
 import { JwtModule } from '@nestjs/jwt';
 import jwtConfig from './config/jwt.config';
 import environmentValidation from './config/enviroment.valiadtion';
+import { AuthenticationGuard } from './auth/guards/authentication/authentication.guard';
 
 const CURRENT_ENV = process.env.NODE_ENV;
 
@@ -53,8 +54,9 @@ const CURRENT_ENV = process.env.NODE_ENV;
     AppService,
     {
       provide: APP_GUARD,
-      useClass: AccessTokenGuard,
+      useClass: AuthenticationGuard,
     },
+    AccessTokenGuard,
   ],
 })
 export class AppModule {}
