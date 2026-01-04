@@ -5,6 +5,7 @@ import { UsersModule } from 'src/users/users.module';
 import { BcryptProvider } from './providers/bcrypt.provider';
 import { HashingProvider } from './providers/hashing.provider';
 import { SignInProvider } from './providers/sign-in.provider';
+import { GenerateTokensProvider } from './providers/generate-tokens.provider';
 import { ConfigModule } from '@nestjs/config';
 import jwtConfig from 'src/config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
@@ -20,6 +21,7 @@ import { JwtModule } from '@nestjs/jwt';
   providers: [
     AuthService,
     SignInProvider,
+    GenerateTokensProvider,
     {
       provide: HashingProvider,
       useClass: BcryptProvider,
