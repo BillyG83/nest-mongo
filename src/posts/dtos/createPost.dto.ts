@@ -31,15 +31,6 @@ export enum PostType {
 }
 
 export class CreatePostDto {
-  @ApiProperty({
-    type: 'integer',
-    required: true,
-    example: 1,
-  })
-  @IsInt()
-  @IsNotEmpty()
-  authorId: number;
-
   @ApiPropertyOptional({
     description: 'Rich-text or markdown body of the post.',
     example: 'Hello world! This is my first blog post.',

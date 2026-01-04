@@ -89,24 +89,25 @@ export class PostsService {
     }
   }
 
-  public async create(@Body() createPostDto: CreatePostDto) {
+  public async create(@Body() createPostDto: CreatePostDto, authorId: number) {
     try {
-      const author = await this.usersService.finByOneById(
-        createPostDto.authorId,
-      );
+      const author = await this.usersService.finByOneById(authorId);
       if (!author) {
         throw new BadRequestException(
-          `No author was found, user with Id: ${createPostDto.authorId}`,
+          `No author was found, user with Id: ${authorId}`,
         );
       }
+
       const tags = await this.tagsService.findMultipleTags(
         createPostDto.tags || [],
       );
+
       const post = this.postsRepository.create({
         ...createPostDto,
         author: author,
         tags: tags || [],
       });
+
       const result = await this.postsRepository.save(post);
       if (!result) {
         throw new HttpException(
@@ -124,9 +125,6 @@ export class PostsService {
       }
       return result;
     } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
       throw new RequestTimeoutException('The request was unsuccessful', {
         cause: error,
       });
